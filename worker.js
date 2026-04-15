@@ -9,12 +9,18 @@ export async function startWorker() {
     let lastRunDay = null;
 
         setInterval(async () => {
+            try {
             const now = new Date();
             const today = now.toDateString();
+            
 
-            if (now.getHours() === 20 && lastRunDay !== today) {
-                lastRunDay = today;
+            if (now.getHours() === 20 && now.getMinutes() === 0 && lastRunDay !== today) {
+            lastRunDay = today;
+            const startOfDay = new Date();
+            startOfDay.setHours(0, 0, 0, 0);
 
+            const endOfDay = new Date();
+            endOfDay.setHours(20, 0, 0, 0);
             const totalHoje = await prisma.discord.count({
                 where: {
                     channelId: '1493999520139448522',
@@ -53,6 +59,10 @@ export async function startWorker() {
                 embeds: [embedResumo],
             });
         }
+    }
+        catch (err) {
+        console.error("Erro no worker (relatório):", err);
+    }
     }, 60000);
 
     setInterval(async () => {
