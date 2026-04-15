@@ -76,6 +76,43 @@ export async function startWorker() {
 
                 let messageSent;
 
+                if (n.channelId === '1493999520139448522') {
+                    const embedInicial = {
+                        title: "✅ NOVO CONTRATO CONFIRMADO",
+                        description: `💼 Um cliente acaba de ser contratado!`,
+                        color: 0x00FF88,
+                        fields: [
+                            {
+                                name: "👤 Nome do Cliente",
+                                value: `\`\`\`${n.nome || "Não informado"}\`\`\``,
+                                inline: false,
+                            },
+                            {
+                                name: "📞 Telefone",
+                                value: `\`\`\`${n.telefone || "Não informado"}\`\`\``,
+                                inline: false,
+                            },
+                        ],
+                        timestamp: new Date(),
+                        footer: {
+                            text: "Atualização automática do sistema",
+                        },
+                    };
+
+                    messageSent = await channel.send({
+                        content: roleMention,
+                        embeds: [embedInicial]
+                    });
+
+                    await prisma.discord.update({
+                        where: { id: n.id },
+                        data: { firstSent: true, sent: true }
+                    });
+
+                    console.log(`📨 1ª mensagem enviada → ${n.nome || n.telefone}`);
+                    continue;
+                }
+
                 // ========================
                 // 1ª MENSAGEM - Inicial
                 // ========================
