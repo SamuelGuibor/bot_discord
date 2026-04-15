@@ -1,0 +1,301 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(cuid())
+  name            String?
+  cpf             String?   
+  data_nasc       DateTime?
+  email           String    @unique
+  nome_res        String?
+  rg_res          String?
+  cpf_res         String?
+  estado_civil_res String?
+  profissao_res   String?
+  password        String?
+  rua             String?
+  bairro          String?
+  numero          String?
+  cep             String?
+  image           String?
+  emailVerified   DateTime?
+  role            String    @default("Filtro de Cartões")
+  rg              String?
+  nome_mae        String?
+  telefone        String?
+  cidade          String?
+  estado          String?
+  estado_civil    String?
+  profissao       String?
+  nacionalidade   String?
+  data_acidente   DateTime?
+  atendimento_via String?
+  hospital        String?
+  outro_hospital  String?
+  lesoes          String?
+  statusStartedAt DateTime?
+  service         String?
+  obs             String?
+  otherObs        String?
+  fixed           Boolean?  @default(true)
+  roleFixed       String?   @default("Acompanhamento de fluxo 1")
+
+  commentsAsAuthor  Comment[] @relation("CommentAuthor")
+  commentsOnCard    Comment[] @relation("UserComments")
+  notifications     Notification[] @relation("UserNotifications")
+
+  accounts  Account[]
+  sessions  Session[]
+  document  Document[]
+  processes Process[] 
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  status   Status?
+}
+
+model Process {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String?
+  cpf             String?   
+  data_nasc       DateTime?
+  email           String?    
+  nome_res        String?
+  rg_res          String?
+  cpf_res         String?
+  estado_civil_res String?
+  profissao_res   String?
+  rua             String?
+  bairro          String?
+  numero          String?
+  cep             String?
+  image           String?
+  emailVerified   DateTime?
+  rg              String?
+  nome_mae        String?
+  telefone        String?
+  cidade          String?
+  estado          String?
+  estado_civil    String?
+  profissao       String?
+  nacionalidade   String?
+  role            String? 
+  statusStartedAt DateTime? 
+  data_acidente   DateTime?
+  atendimento_via String?
+  hospital        String?
+  outro_hospital  String?
+  lesoes          String?
+  type            String? 
+  service         String? 
+  observacao      String?
+  otherObs        String?
+  fixed           Boolean?  @default(true)
+  roleFixed       String?   @default("Acompanhamento de fluxo 1")
+
+  commentsOnProcess Comment[] @relation("ProcessComments")
+
+  documents       Document[] 
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  status Status?
+}
+
+model Comment {
+  id          String   @id @default(cuid())
+  text        String
+  authorId    String   // ID do usuário que escreveu o comentário
+  authorName  String   // Nome para exibição rápida (opcional, pode ser denormalizado)
+  
+  // Campos separados para identificar o dono do comentário
+  userId      String?  // Se for comentário em um cartão de User (Kanban de clientes)
+  processId   String?  // Se for comentário em um Process
+  targetName  String
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relações corretas e não ambíguas
+  author      User     @relation("CommentAuthor", fields: [authorId], references: [id])
+  
+  user        User?    @relation("UserComments", fields: [userId], references: [id])
+  process     Process? @relation("ProcessComments", fields: [processId], references: [id])
+
+  @@index([userId])
+  @@index([processId])
+  @@index([authorId])
+}
+
+enum Status {
+  INICIADO
+  AGUARDANDO_ASSINATURA
+  SOLICITAR_DOCUMENTOS
+  COLETA_DOCUMENTOS
+  ANALISE_DOCUMENTOS
+  PERICIAL
+  AGUARDANDO_PERICIAL
+  PAGAMENTO_HONORARIO
+  PROCESSO_ENCERRADO
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model Message {
+  id           String         @id @default(cuid())
+  titulo       String
+  role         String         @default("USER")
+  multipleMessages SubMessage[]
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model SubMessage {
+  id         String   @id @default(cuid())
+  conteudo   String
+  mediaUrl   String?
+  mediaType  String?
+  messageId  String
+  message    Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Document {
+  id         String   @id @default(uuid())
+  userId     String
+  processId  String?
+  key        String
+  name       String
+  uploadedAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  process    Process? @relation(fields: [processId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Contact {
+  id         String   @id @default(uuid())
+  name       String   
+  number     String   
+  desc       String? 
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt 
+}
+
+model Notification {
+  id           String   @id @default(cuid())
+  recipientId  String
+  authorId     String
+  authorName   String
+  message      String
+  targetName   String
+
+  commentId    String?
+  userId       String?
+  processId    String?
+
+  read         Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  recipient    User     @relation("UserNotifications", fields: [recipientId], references: [id])
+
+  @@index([recipientId])
+}
+
+model Botconversa {
+  id           String   @id @default(cuid())
+  nome         String
+  evento       String
+  telefone     String
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Discord {
+  id           String   @id @default(cuid())
+  message      String
+  channelId    String
+  executeAt    DateTime
+  sent         Boolean  @default(false)
+  firstSent    Boolean   @default(false)
+
+  nome        String?
+  telefone    String?
+  evento      String?
+  hours       String?     
+  
+  @@map("discord")
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime? @updatedAt
+}
+
+model WorkSession {
+  id        String   @id @default(cuid())
+  userId    String
+  discordId String
+  date      String  
+
+  startedAt DateTime?
+  pausedAt  DateTime?
+  resumedAt DateTime?
+  finishedAt DateTime?
+
+  isActive  Boolean  @default(false)
+  isPaused  Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([discordId, date])
+}
