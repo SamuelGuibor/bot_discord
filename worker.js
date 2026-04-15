@@ -14,7 +14,7 @@ export async function startWorker() {
             const today = now.toDateString();
             
 
-            if (now.getHours() === 20 && now.getMinutes() === 0 && lastRunDay !== today) {
+            if (now.getHours() === 23 && now.getMinutes() === 0 && lastRunDay !== today) {
             lastRunDay = today;
             const startOfDay = new Date();
             startOfDay.setHours(0, 0, 0, 0);
