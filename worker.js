@@ -6,19 +6,18 @@ const prisma = new PrismaClient();
 export async function startWorker() {
     console.log("🔥 Worker iniciado");
 
-    setInterval(async () => {
-        const now = new Date();
+    let lastRunDay = null;
 
-        if (now.getHours() === 15 && now.getMinutes() === 0) {
-            const startOfDay = new Date();
-            startOfDay.setHours(0, 0, 0, 0);
+        setInterval(async () => {
+            const now = new Date();
+            const today = now.toDateString();
 
-            const endOfDay = new Date();
-            endOfDay.setHours(23, 59, 59, 999);
+            if (now.getHours() === 20 && lastRunDay !== today) {
+                lastRunDay = today;
 
             const totalHoje = await prisma.discord.count({
                 where: {
-                    channel: '1493999520139448522',
+                    channelId: '1493999520139448522',
                     createdAt: {
                         gte: startOfDay,
                         lte: endOfDay,
@@ -78,9 +77,9 @@ export async function startWorker() {
 
                 if (n.channelId === '1493999520139448522') {
                     const embedInicial = {
-                        title: "✅ NOVO CONTRATO CONFIRMADO",
-                        description: `💼 Um cliente acaba de ser contratado!`,
-                        color: 0x00FF88,
+                        title: "❇️ NOVO CONTRATADO",
+                        description: `Um cliente acaba de ser contratado!`,
+                        color: 0xFF0000,
                         fields: [
                             {
                                 name: "👤 Nome do Cliente",
