@@ -7,6 +7,56 @@ export async function startWorker() {
     console.log("🔥 Worker iniciado");
 
     setInterval(async () => {
+        const now = new Date();
+
+        if (now.getHours() === 13 && now.getMinutes() === 5) {
+            const startOfDay = new Date();
+            startOfDay.setHours(0, 0, 0, 0);
+
+            const endOfDay = new Date();
+            endOfDay.setHours(23, 59, 59, 999);
+
+            const totalHoje = await prisma.discord.count({
+                where: {
+                    channel: '1493999520139448522',
+                    createdAt: {
+                        gte: startOfDay,
+                        lte: endOfDay,
+                    },
+                },
+            });
+
+            const channel = await client.channels.fetch('1493999520139448522');
+
+            const embedResumo = {
+                title: "📊 Relatório Diário de Contratações",
+                description: "Resumo automático gerado ao final do dia.",
+                color: 0x5865F2,
+                fields: [
+                    {
+                        name: "👥 Total de Contratados",
+                        value: `\`\`\`${totalHoje} pessoas\`\`\``,
+                        inline: true,
+                    },
+                    {
+                        name: "📅 Data",
+                        value: `<t:${Math.floor(Date.now() / 1000)}:D>`,
+                        inline: true,
+                    },
+                ],
+                timestamp: new Date(),
+                footer: {
+                    text: "Sistema automático • Bot Paraná Seguros",
+                },
+            };
+
+            await channel.send({
+                embeds: [embedResumo],
+            });
+        }
+    }, 60000);
+
+    setInterval(async () => {
         console.log("⏱️ Rodando verificação...");
 
         const now = new Date();
