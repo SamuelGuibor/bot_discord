@@ -9,7 +9,7 @@ export async function startWorker() {
     setInterval(async () => {
         const now = new Date();
 
-        if (now.getHours() === 13 && now.getMinutes() === 5) {
+        if (now.getHours() === 15 && now.getMinutes() === 0) {
             const startOfDay = new Date();
             startOfDay.setHours(0, 0, 0, 0);
 
