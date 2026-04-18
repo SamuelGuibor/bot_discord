@@ -6,7 +6,7 @@ export function setupPointSystem(client) {
         if (!interaction.isButton()) return;
 
         const userId = interaction.user.id;
-        const today = new Date().toISOString().split("T")[0];
+        const today = new Date().toLocaleDateString("sv-SE");
 
         let session = await prisma.workSession.findUnique({
             where: {

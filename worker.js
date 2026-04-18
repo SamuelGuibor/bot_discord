@@ -8,61 +8,123 @@ export async function startWorker() {
 
     let lastRunDay = null;
 
-        setInterval(async () => {
-            try {
-            const now = new Date();
-            const today = now.toDateString();
-            
+    setInterval(async () => {
+        const now = new Date();
+        const today = now.toDateString();
 
-            if (now.getHours() === 23 && now.getMinutes() === 0 && lastRunDay !== today) {
+        if (now.getHours() === 15 && lastRunDay !== today) {
             lastRunDay = today;
-            const startOfDay = new Date();
-            startOfDay.setHours(0, 0, 0, 0);
 
-            const endOfDay = new Date();
-            endOfDay.setHours(20, 0, 0, 0);
-            const totalHoje = await prisma.discord.count({
-                where: {
+            const reportsConfig = [
+                {
                     channelId: '1493999520139448522',
-                    createdAt: {
-                        gte: startOfDay,
-                        lte: endOfDay,
+                    name: 'Contratações',
+                    getData: async () => {
+                        return await prisma.discord.count({
+                            where: {
+                                channelId: '1493999520139448522',
+                                createdAt: {
+                                    gte: startOfDay,
+                                    lte: endOfDay,
+                                },
+                            },
+                        });
                     },
+                    buildEmbed: (total) => ({
+                        title: "📊 Relatório Diário de Contratações",
+                        description: "Resumo automático gerado ao final do dia.",
+                        color: 0x5865F2,
+                        fields: [
+                            {
+                                name: "👥 Total de Contratados",
+                                value: `\`\`\`${total} pessoas\`\`\``,
+                                inline: true,
+                            },
+                        ],
+                    }),
                 },
-            });
 
-            const channel = await client.channels.fetch('1493999520139448522');
-
-            const embedResumo = {
-                title: "📊 Relatório Diário de Contratações",
-                description: "Resumo automático gerado ao final do dia.",
-                color: 0x5865F2,
-                fields: [
-                    {
-                        name: "👥 Total de Contratados",
-                        value: `\`\`\`${totalHoje} pessoas\`\`\``,
-                        inline: true,
+                {
+                    channelId: '1491866020820811837',
+                    name: 'Entradas',
+                    getData: async () => {
+                        return await prisma.discord.count({
+                            where: {
+                                channelId: '1491866020820811837',
+                                createdAt: {
+                                    gte: startOfDay,
+                                    lte: endOfDay,
+                                },
+                            },
+                        });
                     },
-                    {
-                        name: "📅 Data",
-                        value: `<t:${Math.floor(Date.now() / 1000)}:D>`,
-                        inline: true,
-                    },
-                ],
-                timestamp: new Date(),
-                footer: {
-                    text: "Sistema automático • Bot Paraná Seguros",
+                    buildEmbed: (total) => ({
+                        title: "📉 Relatório de Entradas",
+                        description: "Resumo de Entradas Diarias.",
+                        color: 0xED4245,
+                        fields: [
+                            {
+                                name: "🚪 Total de Entradas",
+                                value: `\`\`\`${total} pessoas\`\`\``,
+                                inline: true,
+                            },
+                        ],
+                    }),
                 },
-            };
 
-            await channel.send({
-                embeds: [embedResumo],
-            });
+                {
+                    channelId: '1491866065293283428',
+                    name: 'Saidas',
+                    getData: async () => {
+                        return await prisma.discord.count({
+                            where: {
+                                channelId: '1491866065293283428',
+                                createdAt: {
+                                    gte: startOfDay,
+                                    lte: endOfDay,
+                                },
+                            },
+                        });
+                    },
+                    buildEmbed: (total) => ({
+                        title: "📉 Relatório de Saídas",
+                        description: "Resumo de Saídas Diarias.",
+                        color: 0xED4245,
+                        fields: [
+                            {
+                                name: "🚪 Total de Saídas",
+                                value: `\`\`\`${total} pessoas\`\`\``,
+                                inline: true,
+                            },
+                        ],
+                    }),
+                },
+            ];
+
+            for (const config of reportsConfig) {
+                try {
+                    const total = await config.getData();
+
+                    const channel = await client.channels.fetch(config.channelId);
+
+                    const embed = {
+                        ...config.buildEmbed(total),
+                        timestamp: new Date(),
+                        footer: {
+                            text: "Sistema automático • Bot Paraná Seguros",
+                        },
+                    };
+
+                    await channel.send({
+                        embeds: [embed],
+                    });
+                }
+
+                catch (erro) {
+                    console.log('Problema ao enviar relatorios diarios', erro)
+                }
+            }
         }
-    }
-        catch (err) {
-        console.error("Erro no worker (relatório):", err);
-    }
     }, 60000);
 
     setInterval(async () => {
