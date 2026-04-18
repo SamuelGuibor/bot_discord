@@ -90,7 +90,7 @@ async function sendLog(interaction, type) {
 📋 **Registro de Ponto**
 👤 Usuário: ${interaction.user.tag}
 📌 Ação: ${type}
-🕒 Horário: ${new Date().toLocaleString()}
+🕒 Horário: ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", })}
     `,
     });
 }
