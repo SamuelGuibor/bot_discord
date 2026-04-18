@@ -12,7 +12,7 @@ export async function startWorker() {
         const now = new Date();
         const today = now.toDateString();
 
-        if (now.getHours() === 15 && lastRunDay !== today) {
+        if (now.getHours() === 20 && now.getMinutes() === 20 && lastRunDay !== today) {
             lastRunDay = today;
 
             const reportsConfig = [
