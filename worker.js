@@ -9,122 +9,128 @@ export async function startWorker() {
     let lastRunDay = null;
 
     setInterval(async () => {
-        const now = new Date();
-        const today = now.toDateString();
+        try {
+            const now = new Date();
+            const today = now.toDateString();
+            const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+            if (now.getHours() === 20 && now.getMinutes() === 0 && lastRunDay !== today) {
+                lastRunDay = today;
 
-        if (now.getHours() === 20 && now.getMinutes() === 20 && lastRunDay !== today) {
-            lastRunDay = today;
-
-            const reportsConfig = [
-                {
-                    channelId: '1493999520139448522',
-                    name: 'Contratações',
-                    getData: async () => {
-                        return await prisma.discord.count({
-                            where: {
-                                channelId: '1493999520139448522',
-                                createdAt: {
-                                    gte: startOfDay,
-                                    lte: endOfDay,
+                const reportsConfig = [
+                    {
+                        channelId: '1493999520139448522',
+                        name: 'Contratações',
+                        getData: async () => {
+                            return await prisma.discord.count({
+                                where: {
+                                    channelId: '1493999520139448522',
+                                    createdAt: {
+                                        gte: startOfDay,
+                                        lte: endOfDay,
+                                    },
                                 },
-                            },
-                        });
-                    },
-                    buildEmbed: (total) => ({
-                        title: "📊 Relatório Diário de Contratações",
-                        description: "Resumo automático gerado ao final do dia.",
-                        color: 0x5865F2,
-                        fields: [
-                            {
-                                name: "👥 Total de Contratados",
-                                value: `\`\`\`${total} pessoas\`\`\``,
-                                inline: true,
-                            },
-                        ],
-                    }),
-                },
-
-                {
-                    channelId: '1491866020820811837',
-                    name: 'Entradas',
-                    getData: async () => {
-                        return await prisma.discord.count({
-                            where: {
-                                channelId: '1491866020820811837',
-                                createdAt: {
-                                    gte: startOfDay,
-                                    lte: endOfDay,
-                                },
-                            },
-                        });
-                    },
-                    buildEmbed: (total) => ({
-                        title: "📉 Relatório de Entradas",
-                        description: "Resumo de Entradas Diarias.",
-                        color: 0xED4245,
-                        fields: [
-                            {
-                                name: "🚪 Total de Entradas",
-                                value: `\`\`\`${total} pessoas\`\`\``,
-                                inline: true,
-                            },
-                        ],
-                    }),
-                },
-
-                {
-                    channelId: '1491866065293283428',
-                    name: 'Saidas',
-                    getData: async () => {
-                        return await prisma.discord.count({
-                            where: {
-                                channelId: '1491866065293283428',
-                                createdAt: {
-                                    gte: startOfDay,
-                                    lte: endOfDay,
-                                },
-                            },
-                        });
-                    },
-                    buildEmbed: (total) => ({
-                        title: "📉 Relatório de Saídas",
-                        description: "Resumo de Saídas Diarias.",
-                        color: 0xED4245,
-                        fields: [
-                            {
-                                name: "🚪 Total de Saídas",
-                                value: `\`\`\`${total} pessoas\`\`\``,
-                                inline: true,
-                            },
-                        ],
-                    }),
-                },
-            ];
-
-            for (const config of reportsConfig) {
-                try {
-                    const total = await config.getData();
-
-                    const channel = await client.channels.fetch(config.channelId);
-
-                    const embed = {
-                        ...config.buildEmbed(total),
-                        timestamp: new Date(),
-                        footer: {
-                            text: "Sistema automático • Bot Paraná Seguros",
+                            });
                         },
-                    };
+                        buildEmbed: (total) => ({
+                            title: "📊 Relatório Diário de Contratações",
+                            description: "Resumo automático gerado ao final do dia.",
+                            color: 0x5865F2,
+                            fields: [
+                                {
+                                    name: "👥 Total de Contratados",
+                                    value: `\`\`\`${total} pessoas\`\`\``,
+                                    inline: true,
+                                },
+                            ],
+                        }),
+                    },
 
-                    await channel.send({
-                        embeds: [embed],
-                    });
-                }
+                    {
+                        channelId: '1491866020820811837',
+                        name: 'Entradas',
+                        getData: async () => {
+                            return await prisma.discord.count({
+                                where: {
+                                    channelId: '1491866020820811837',
+                                    createdAt: {
+                                        gte: startOfDay,
+                                        lte: endOfDay,
+                                    },
+                                },
+                            });
+                        },
+                        buildEmbed: (total) => ({
+                            title: "📉 Relatório de Entradas",
+                            description: "Resumo de Entradas Diarias.",
+                            color: 0xED4245,
+                            fields: [
+                                {
+                                    name: "🚪 Total de Entradas",
+                                    value: `\`\`\`${total} pessoas\`\`\``,
+                                    inline: true,
+                                },
+                            ],
+                        }),
+                    },
 
-                catch (erro) {
-                    console.log('Problema ao enviar relatorios diarios', erro)
+                    {
+                        channelId: '1491866065293283428',
+                        name: 'Saidas',
+                        getData: async () => {
+                            return await prisma.discord.count({
+                                where: {
+                                    channelId: '1491866065293283428',
+                                    createdAt: {
+                                        gte: startOfDay,
+                                        lte: endOfDay,
+                                    },
+                                },
+                            });
+                        },
+                        buildEmbed: (total) => ({
+                            title: "📉 Relatório de Saídas",
+                            description: "Resumo de Saídas Diarias.",
+                            color: 0xED4245,
+                            fields: [
+                                {
+                                    name: "🚪 Total de Saídas",
+                                    value: `\`\`\`${total} pessoas\`\`\``,
+                                    inline: true,
+                                },
+                            ],
+                        }),
+                    },
+                ];
+
+                for (const config of reportsConfig) {
+                    try {
+                        const total = await config.getData();
+
+                        const channel = await client.channels.fetch(config.channelId);
+
+                        const embed = {
+                            ...config.buildEmbed(total),
+                            timestamp: new Date(),
+                            footer: {
+                                text: "Sistema automático • Bot Paraná Seguros",
+                            },
+                        };
+
+                        await channel.send({
+                            embeds: [embed],
+                        });
+                    }
+
+                    catch (erro) {
+                        console.log('Problema ao enviar relatorios diarios', erro)
+                    }
                 }
             }
+        } catch (erro) {
+            console.log("deu erro ao enviar msg diaria", erro)
         }
+
     }, 60000);
 
     setInterval(async () => {
