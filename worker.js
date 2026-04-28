@@ -262,7 +262,7 @@ export async function startWorker() {
                 console.error(`Erro ao processar notificação ${n.id}:`, err);
             }
         }
-    }, 15000); // 15 segundos
+    }, 60000); 
 }
 
 // ========================

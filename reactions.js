@@ -15,7 +15,6 @@ export function setupReactionListener(client) {
             const message = reaction.message;
             const channel = message.channel;
 
-            // Busca a notificação mais recente neste canal
             const notification = await prisma.discord.findFirst({
                 where: {
                     channelId: channel.id,
@@ -25,14 +24,11 @@ export function setupReactionListener(client) {
 
             if (!notification) return;
 
-            // ==================== ❌ EXCLUIR ====================
             if (reaction.emoji.name === "❌") {
-                // Deleta do banco
                 await prisma.discord.delete({
                     where: { id: notification.id }
                 }).catch(() => {});
 
-                // Deleta a mensagem do chat (sem reply nenhum)
                 await message.delete().catch(err => {
                     console.error("Erro ao deletar mensagem:", err);
                 });
@@ -40,7 +36,6 @@ export function setupReactionListener(client) {
                 console.log(`🗑️ Notificação deletada por ${user.tag} (ID: ${notification.id})`);
             }
 
-            // ==================== ✅ VISUALIZADO ====================
             else if (reaction.emoji.name === "✅") {
                 await prisma.discord.update({
                     where: { id: notification.id },
@@ -49,8 +44,7 @@ export function setupReactionListener(client) {
                         firstSent: true
                     }
                 });
-
-                // Só aqui manda o reply
+   
                 await message.reply({ 
                     content: "✅ Marcado como visualizado." 
                 });
