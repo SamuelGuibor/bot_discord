@@ -27,7 +27,6 @@ export function setupPointSystem(client) {
             });
         }
 
-        // START
         if (interaction.customId === "point_start") {
             if (session.isActive) {
                 return interaction.reply({
@@ -53,7 +52,6 @@ export function setupPointSystem(client) {
             });
         }
 
-        // STOP
         if (interaction.customId === "point_stop") {
             if (!session.isActive) {
                 return interaction.reply({
