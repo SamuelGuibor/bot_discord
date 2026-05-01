@@ -10,7 +10,8 @@
     "@prisma/client": "^6.6.0",
     "axios": "^1.13.2",
     "discord.js": "^14.26.0",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "pg": "^8.20.0"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
