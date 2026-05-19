@@ -1,8 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "./db.js";
 import { client } from "./index.js";
 import pg from "pg";
 
-const prisma = new PrismaClient();
 const { Client } = pg;
 
 async function createListenerConnection() {

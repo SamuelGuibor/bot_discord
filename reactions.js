@@ -1,7 +1,5 @@
 // reactions.js
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "./db.js";
 
 export function setupReactionListener(client) {
     client.on('messageReactionAdd', async (reaction, user) => {
