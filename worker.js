@@ -13,7 +13,7 @@ async function createListenerConnection() {
 function scheduleNextReport() {
     const now = new Date();
     const next = new Date();
-    next.setHours(20, 0, 0, 0);
+    next.setHours(23, 0, 0, 0);
 
     if (now >= next) next.setDate(next.getDate() + 1);
 
@@ -40,26 +40,6 @@ async function sendDailyReports() {
                 description: "Resumo automático gerado ao final do dia.",
                 color: 0x5865F2,
                 fields: [{ name: "👥 Total de Contratados", value: `\`\`\`${total} pessoas\`\`\``, inline: true }],
-            }),
-        },
-        {
-            channelId: '1491866020820811837',
-            name: 'Entradas',
-            buildEmbed: (total) => ({
-                title: "📉 Relatório de Entradas",
-                description: "Resumo de Entradas Diarias.",
-                color: 0xED4245,
-                fields: [{ name: "🚪 Total de Entradas", value: `\`\`\`${total} pessoas\`\`\``, inline: true }],
-            }),
-        },
-        {
-            channelId: '1491866065293283428',
-            name: 'Saidas',
-            buildEmbed: (total) => ({
-                title: "📉 Relatório de Saídas",
-                description: "Resumo de Saídas Diarias.",
-                color: 0xED4245,
-                fields: [{ name: "🚪 Total de Saídas", value: `\`\`\`${total} pessoas\`\`\``, inline: true }],
             }),
         },
     ];
