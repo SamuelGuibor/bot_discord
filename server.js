@@ -2,8 +2,8 @@ import http from "http";
 import { processNotification } from "./worker.js";
 
 export function startWebhookServer() {
-    const PORT = process.env.PORT || process.env.WEBHOOK_PORT || 3001;
-    const SECRET = process.env.WEBHOOK_SECRET || "";
+    const PORT = 8080;
+    const SECRET = process.env.WEBHOOK_SECRET;
 
     const server = http.createServer(async (req, res) => {
         if (req.method === "POST" && req.url === "/webhook/notify") {
