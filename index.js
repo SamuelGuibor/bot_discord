@@ -3,7 +3,8 @@ import dotenv from "dotenv";
 import { startWorker } from "./worker.js";
 import { setupReactionListener } from "./reactions.js";
 import { setupPointSystem } from "./ponto.js";
-import { sendPointPanel } from "./sendPointMessage.js"
+import { sendPointPanel } from "./sendPointMessage.js";
+import { startWebhookServer } from "./server.js";
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ client.once("clientReady", async () => {
     setupPointSystem(client);
     setupReactionListener(client);
     startWorker();
+    startWebhookServer();
 });
 
 client.login(process.env.DISCORD_TOKEN);

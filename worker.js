@@ -1,14 +1,5 @@
 import { prisma } from "./db.js";
 import { client } from "./index.js";
-import pg from "pg";
-
-const { Client } = pg;
-
-async function createListenerConnection() {
-    const pgClient = new Client({ connectionString: process.env.DATABASE_URL });
-    await pgClient.connect();
-    return pgClient;
-}
 
 function scheduleNextReport() {
     const now = new Date();
@@ -69,7 +60,7 @@ async function sendDailyReports() {
     }
 }
 
-async function processNotification(record) {
+export async function processNotification(record) {
     const now = new Date();
 
     if (record.sent) return;
@@ -181,49 +172,21 @@ async function addReactions(discordMessage) {
     }
 }
 
-async function startListener() {
-    let pgClient;
-
-    async function connect() {
-        try {
-            pgClient = await createListenerConnection();
-
-            await pgClient.query('LISTEN discord_changes');
-            console.log("👂 Escutando mudanças no banco...");
-
-            pgClient.on('notification', async (msg) => {
-                try {
-                    const record = JSON.parse(msg.payload);
-                    console.log(`🔔 Mudança detectada → id: ${record.id}`);
-                    await processNotification(record);
-                } catch (err) {
-                    console.error("Erro ao processar notificação do banco:", err);
-                }
-            });
-
-            pgClient.on('error', async (err) => {
-                console.error("❌ Erro na conexão do listener:", err.message);
-                await reconnect();
-            });
-
-        } catch (err) {
-            console.error("Falha ao conectar listener:", err.message);
-            await reconnect();
+async function processUnsent() {
+    try {
+        const unsent = await prisma.discord.findMany({ where: { sent: false } });
+        console.log(`📋 ${unsent.length} notificações pendentes encontradas`);
+        for (const record of unsent) {
+            await processNotification(record);
         }
+    } catch (err) {
+        console.error("Erro ao processar notificações pendentes:", err);
     }
-
-    async function reconnect() {
-        console.log("🔁 Reconectando listener em 5s...");
-        try { await pgClient?.end(); } catch (_) {}
-        setTimeout(connect, 5000);
-    }
-
-    await connect();
 }
 
 export async function startWorker() {
     console.log("🔥 Worker iniciado");
 
     scheduleNextReport();
-    await startListener();
+    await processUnsent();
 }
