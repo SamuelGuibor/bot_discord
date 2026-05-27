@@ -8,6 +8,14 @@ import { startWebhookServer } from "./server.js";
 
 dotenv.config();
 
+process.on("unhandledRejection", (err) => {
+    console.error("unhandledRejection:", err);
+});
+
+process.on("uncaughtException", (err) => {
+    console.error("uncaughtException:", err);
+});
+
 export const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,

@@ -1,78 +1,94 @@
 import { prisma } from "./db.js";
 
+const safeReply = async (interaction, options) => {
+    if (interaction.replied || interaction.deferred) return;
+    try {
+        await interaction.reply(options);
+    } catch {}
+};
+
 export function setupPointSystem(client) {
     client.on("interactionCreate", async (interaction) => {
         if (!interaction.isButton()) return;
+        if (interaction.customId !== "point_start" && interaction.customId !== "point_stop") return;
 
         const userId = interaction.user.id;
         const today = new Date().toLocaleDateString("sv-SE");
 
-        let session = await prisma.workSession.findUnique({
-            where: {
-                discordId_date: {
-                    discordId: userId,
-                    date: today,
-                },
-            },
-        });
-
-        if (!session) {
-            session = await prisma.workSession.create({
-                data: {
-                    discordId: userId,
-                    userId: userId,
-                    date: today,
+        try {
+            let session = await prisma.workSession.findUnique({
+                where: {
+                    discordId_date: {
+                        discordId: userId,
+                        date: today,
+                    },
                 },
             });
-        }
 
-        if (interaction.customId === "point_start") {
-            if (session.isActive) {
-                return interaction.reply({
-                    content: "⚠️ Você já iniciou o ponto hoje.",
-                    ephemeral: true,
+            if (!session) {
+                session = await prisma.workSession.create({
+                    data: {
+                        discordId: userId,
+                        userId: userId,
+                        date: today,
+                    },
                 });
             }
 
-            await prisma.workSession.update({
-                where: { id: session.id },
-                data: {
-                    startedAt: new Date(),
-                    isActive: true,
-                    isPaused: false,
-                },
-            });
+            if (interaction.customId === "point_start") {
+                if (session.isActive) {
+                    return safeReply(interaction, {
+                        content: "⚠️ Você já iniciou o ponto hoje.",
+                        flags: 64,
+                    });
+                }
 
-            await sendLog(interaction, "🟢 INÍCIO");
+                await prisma.workSession.update({
+                    where: { id: session.id },
+                    data: {
+                        startedAt: new Date(),
+                        isActive: true,
+                        isPaused: false,
+                    },
+                });
 
-            return interaction.reply({
-                content: "✅ Ponto iniciado!",
-                ephemeral: true,
-            });
-        }
+                await sendLog(interaction, "🟢 INÍCIO");
 
-        if (interaction.customId === "point_stop") {
-            if (!session.isActive) {
-                return interaction.reply({
-                    content: "⚠️ Você não iniciou ainda.",
-                    ephemeral: true,
+                return safeReply(interaction, {
+                    content: "✅ Ponto iniciado!",
+                    flags: 64,
                 });
             }
 
-            await prisma.workSession.update({
-                where: { id: session.id },
-                data: {
-                    finishedAt: new Date(),
-                    isActive: false,
-                    isPaused: false,
-                },
-            });
+            if (interaction.customId === "point_stop") {
+                if (!session.isActive) {
+                    return safeReply(interaction, {
+                        content: "⚠️ Você não iniciou ainda.",
+                        flags: 64,
+                    });
+                }
 
-            await sendLog(interaction, "🔴 FINALIZADO");
+                await prisma.workSession.update({
+                    where: { id: session.id },
+                    data: {
+                        finishedAt: new Date(),
+                        isActive: false,
+                        isPaused: false,
+                    },
+                });
 
-            return interaction.reply({
-                content: "🏁 Ponto finalizado!",
-                ephemeral: true,
+                await sendLog(interaction, "🔴 FINALIZADO");
+
+                return safeReply(interaction, {
+                    content: "🏁 Ponto finalizado!",
+                    flags: 64,
+                });
+            }
+        } catch (err) {
+            console.error("Erro no handler de ponto:", err);
+            safeReply(interaction, {
+                content: "❌ Ocorreu um erro ao registrar o ponto. Tente novamente.",
+                flags: 64,
             });
         }
     });
